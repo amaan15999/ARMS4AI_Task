@@ -1,215 +1,110 @@
-Cloudless Mosaic TIF URL- https://drive.google.com/file/d/11mahM2YM4uBhs4sCDHDGWy9N6H2ZCt2A/view?usp=sharing
+# Cloudless Raster Mosaic -- Satellite Tile Merging Pipeline
 
-Cloudless Raster Mosaic - Satellite Tile Merging Pipeline
-============================================================
+This project delivers a **complete, production-ready pipeline** for
+generating a **cloudless, georeferenced satellite mosaic** from multiple
+raster tiles.\
+The workflow ensures **consistent CRS, spatial resolution, cloud
+masking, efficient mosaicing**, and **quality-checked outputs**,
+optimized for Google Colab / Kaggle environments.
 
-This repository provides a complete workflow for generating a **cloudless, georeferenced satellite mosaic** from multiple raster tiles.The pipeline includes CRS standardization, cloud masking, mosaicing using GDAL VRT streaming, preview generation, and result validation.
+## ⭐ Key Capabilities
 
-The entire workflow is designed for **Google Colab / Kaggle** and works efficiently even with large datasets.
+-   Automated dataset download & extraction\
+-   Metadata introspection for each input tile\
+-   Reprojection + resampling to a unified CRS\
+-   Cloud detection using brightness, saturation & reflectance
+    thresholds\
+-   Morphological cleaning for mask refinement\
+-   RAM-efficient mosaic generation using GDAL VRT\
+-   Preview generation (PNG + 8-bit GeoTIFF)\
+-   Export of metadata CSV + validation report
 
-Features
------------
+## 📦 Libraries & Tools
 
-*   Automatic dataset download & extraction
-    
-*   Metadata inspection for all tiles
-    
-*   Reprojection + resampling to uniform CRS
-    
-*   Brightness–saturation cloud masking
-    
-*   RAM-safe mosaic creation using GDAL VRT
-    
-*   Preview generation (PNG + 8-bit GeoTIFF)
-    
-*   Metadata CSV and mosaic validation report
-    
+### System / GDAL
 
-Libraries Used
-=================
+-   gdal-bin\
+-   libgdal-dev
 
-### ✔ System / GDAL  
-- `gdal-bin`  
-- `libgdal-dev`
+### Python Libraries
 
-### ✔ Python Libraries  
-- `rasterio`  
-- `rioxarray`  
-- `geopandas`  
-- `numpy`  
-- `matplotlib`  
-- `PIL (Pillow)`  
-- `rasterstats`  
-- `tqdm`  
-- `scipy` (for morphological cloud-mask operations)  
-- `subprocess` (for GDAL VRT mosaic)
+-   rasterio, rioxarray\
+-   geopandas\
+-   numpy\
+-   matplotlib\
+-   Pillow (PIL)\
+-   rasterstats\
+-   scipy\
+-   tqdm\
+-   subprocess
 
----
+## 🚀 Execution Workflow
 
-    
+### 1️⃣ Install Dependencies
 
-Steps to Run
-===============
-
-1️⃣ Install Dependencies
-------------------------
-
-```bash
+``` bash
 !apt-get update -y && apt-get install -y gdal-bin libgdal-dev
 !pip install rasterio rioxarray geopandas matplotlib pillow numpy rasterstats tqdm
 ```
 
-2️⃣ Download & Extract Dataset
-------------------------------
+### 2️⃣ Download & Extract Dataset
 
-Dataset URL: https://objectstore.e2enetworks.net/btechtasksampledata/data.zip
+Dataset:\
+`https://objectstore.e2enetworks.net/btechtasksampledata/data.zip`
 
-Extracted to:
+Extracts to:
 
-`   /content/raster_mosaic_task/   `
+    /content/raster_mosaic_task/
 
-3️⃣ List and Validate Tiles
----------------------------
+### 3️⃣ Scan & Validate Input Tiles
 
-*   Recursively finds all .tif/.tiff files
-    
-*   Prints CRS, pixel resolution, bounds, and metadata
-    
-*   Previews the first image automatically (RGB or grayscale)
-    
+-   Identifies all `.tif/.tiff` files\
+-   Reads CRS, bounds, pixel resolution\
+-   Shows RGB preview
 
-4️⃣ Standardize Tiles (Reproject + Resample)
---------------------------------------------
+### 4️⃣ Standardize Tiles (CRS + Resolution)
 
-All tiles are converted to a unified grid:
+All tiles converted to:
 
-PropertyValue -- **CRS** EPSG:3857,**Resolution**1.21 meters, **Data Type** uint8
+-   CRS: EPSG:3857\
+-   Resolution: 1.21 m\
+-   Datatype: uint8
 
-Outputs stored in:
+Output: `standardized_tiles/`
 
-`   standardized_tiles/   `
+### 5️⃣ Cloud Masking
 
-5️⃣ Cloud Masking
------------------
+Cloud detection using:
 
-Clouds are detected using:
+-   Brightness threshold\
+-   Saturation threshold\
+-   High reflectance\
+-   Morphological opening/closing
 
-*   Mean brightness
-    
-*   Saturation threshold
-    
-*   Very high reflectance detection
-    
-*   Morphological cleaning using:
-    
-    *   binary\_opening (3×3)
-        
-    *   binary\_closing (5×5)
-        
+Cloud pixels → NoData (0).\
+Output: `cloudmasked_tiles/`
 
-Masked pixels → set to **NoData (0)**.
+### 6️⃣ RAM-Safe Mosaic (GDAL VRT)
 
-Outputs stored in:
+-   `gdalbuildvrt`\
+-   `gdal_translate`
 
-`   cloudmasked_tiles/   `
+Final output: `cloudless_mosaic.tif`
 
-6️⃣ RAM-Safe Mosaic Generation (GDAL)
--------------------------------------
+### 7️⃣ Preview Outputs
 
-Uses GDAL VRT streaming:
+-   `cloudless_mosaic_preview.png`\
+-   `cloudless_mosaic_8bit.tif`
 
-1.  gdalbuildvrt → creates virtual mosaic
-    
-2.  gdal\_translate → writes final compressed GeoTIFF
-    
+### 8️⃣ Metadata & Validation Reports
 
-Output:
+-   `tiles_metadata.csv`\
+-   `mosaic_report.txt`
 
-`   cloudless_mosaic.tif   `
+## ✅ Final Output Summary
 
-Properties:
-
-*   LZW compression
-    
-*   Tiled
-    
-*   BigTIFF-safe
-    
-*   Unified CRS & resolution
-    
-
-7️⃣ Generate Preview Outputs
-----------------------------
-
-###  PNG Preview
-
-*   Max 1200×1200
-    
-*   Percentile stretch (2–98%)
-    
-
-### 8-bit GeoTIFF
-
-Optional lightweight visualization.
-
-Files:
-
-`   cloudless_mosaic_preview.png  cloudless_mosaic_8bit.tif   `
-
-8️⃣ Metadata & Validation Reports
----------------------------------
-
-### ✔ Tile Metadata CSV
-
-tiles\_metadata.csv includes:
-
-*   Tile name
-    
-*   CRS
-    
-*   Width, height
-    
-*   Pixel size
-    
-*   Bands
-    
-*   Data type
-    
-*   NoData value
-    
-
-### ✔ Mosaic Validation Report
-
-mosaic\_report.txt includes:
-
-*   Final mosaic dims
-    
-*   CRS
-    
-*   Bounds
-    
-*   Total NoData pixels
-    
-*   Band info
-    
-*   Pixel resolution
-    
-
-Summary of Results
-=====================
-
-### ✔ All input tiles successfully processed
-
-### ✔ Reprojected to a unified CRS (EPSG:3857 @ 1.21m)
-
-### ✔ Cloud-removal successful using improved RGB mask
-
-### ✔ Final cloudless mosaic generated via GDAL
-
-### ✔ PNG + 8-bit TIFF previews created
-
-### ✔ Metadata CSV and validation reports exported
-
-Final output files:
-
-`   cloudless_mosaic.tif  cloudless_mosaic_preview.png  tiles_metadata.csv  mosaic_report.txt   `
+    cloudless_mosaic.tif
+    cloudless_mosaic_preview.png
+    cloudless_mosaic_8bit.tif
+    tiles_metadata.csv
+    mosaic_report.txt
